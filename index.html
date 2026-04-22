@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Regional Board Navigator</title>
+  <style>
+    :root {
+      --bg: #eef2f7;
+      --panel: #ffffff;
+      --panel-2: #f7f9fc;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --border: #d8e0ea;
+      --shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+      --apac: #7c3aed;
+      --emea: #2563eb;
+      --na: #16a34a;
+      --latam: #ea580c;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: linear-gradient(180deg, #f4f7fb 0%, #e9eef5 100%);
+      color: var(--text);
+    }
+
+    .wrap {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .dashboard {
+      width: 100%;
+      max-width: 1100px;
+      background: rgba(255, 255, 255, 0.82);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(216, 224, 234, 0.9);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      padding: 28px;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .header h1 {
+      margin: 0 0 8px;
+      font-size: 28px;
+      line-height: 1.15;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .header p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1.55fr 0.95fr;
+      gap: 22px;
+      align-items: stretch;
+    }
+
+    .map-card,
+    .list-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 18px;
+      box-shadow: 0 6px 20px rgba(15, 23, 42, 0.04);
+    }
+
+    .section-title {
+      margin: 0 0 14px;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .map-shell {
+      background: var(--panel-2);
+      border: 1px solid #e6ebf2;
+      border-radius: 18px;
+      padding: 10px;
+    }
+
+    svg {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .region {
+      cursor: pointer;
+      transition: transform 0.18s ease, opacity 0.18s ease, filter 0.18s ease;
+      transform-origin: center;
+    }
+
+    .region:hover {
+      opacity: 0.92;
+      transform: translateY(-2px) scale(1.01);
+      filter: brightness(1.03);
+    }
+
+    .region-label {
+      font-size: 17px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      fill: white;
+      text-anchor: middle;
+      pointer-events: none;
+    }
+
+    .region-sub {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      fill: rgba(255, 255, 255, 0.9);
+      text-anchor: middle;
+      pointer-events: none;
+    }
+
+    .note {
+      margin-top: 12px;
+      font-size: 13px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .nav-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .nav-button {
+      width: 100%;
+      border: 1px solid var(--border);
+      background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+      border-radius: 16px;
+      padding: 16px 18px;
+      text-align: left;
+      cursor: pointer;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+      font: inherit;
+      color: var(--text);
+    }
+
+    .nav-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+      border-color: #c7d2e0;
+    }
+
+    .nav-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 6px;
+    }
+
+    .nav-name {
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .badge {
+      font-size: 12px;
+      font-weight: 700;
+      color: white;
+      padding: 6px 10px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    .badge.apac { background: var(--apac); }
+    .badge.emea { background: var(--emea); }
+    .badge.na { background: var(--na); }
+    .badge.latam { background: var(--latam); }
+
+    .nav-desc {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .header h1 {
+        font-size: 24px;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .dashboard {
+        padding: 18px;
+        border-radius: 18px;
+      }
+
+      .map-card,
+      .list-card {
+        padding: 14px;
+        border-radius: 18px;
+      }
+
+      .region-label {
+        font-size: 14px;
+      }
+
+      .region-sub {
+        font-size: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="dashboard">
+      <div class="header">
+        <h1>Regional Board Navigator</h1>
+        <p>Select a region from the map or the quick links to open its monday.com board.</p>
+      </div>
+
+      <div class="layout">
+        <div class="map-card">
+          <h2 class="section-title">World Map</h2>
+          <div class="map-shell">
+            <svg viewBox="0 0 1000 520" aria-label="Clickable regional map">
+              <!-- soft background map silhouettes -->
+              <g opacity="0.18" fill="#94a3b8">
+                <path d="M77 158c18-20 34-38 63-44 41-9 71 10 96 7 19-3 29-16 49-14 35 3 50 35 63 58 15 27 31 44 21 67-13 29-67 28-84 53-15 22 6 52-12 69-19 18-52 9-82 0-39-11-90-34-111-76-18-36-21-87-3-120z"/>
+                <path d="M403 120c40-16 90-21 134-14 25 4 44 16 70 19 33 4 71-6 103 5 35 12 61 41 81 72 22 35 25 72 8 104-18 32-53 57-92 66-34 8-74 4-107 16-33 12-55 38-89 48-32 10-73 3-96-23-24-27-23-68-21-104 3-43 7-86 9-129z"/>
+                <path d="M741 162c25-27 50-46 89-49 28-2 60 8 86 21 39 21 71 59 82 101 10 40-7 73-39 98-31 24-73 41-112 44-41 3-76-17-103-46-21-22-38-51-36-82 2-34 13-64 33-87z"/>
+                <path d="M705 362c22-8 45-6 64 4 18 10 32 29 39 49 7 20 8 45-6 61-14 16-40 22-62 17-21-4-41-18-50-38-9-20-6-45 15-61z"/>
+                <path d="M290 394c19-9 41-12 60-5 17 6 33 23 34 42 1 19-10 37-25 49-18 14-42 24-64 19-20-4-36-20-38-41-2-27 11-52 33-64z"/>
+              </g>
+
+              <!-- NORTH AMERICA -->
+              <g class="region" onclick="window.top.location.href='https://motionpictures.monday.com/boards/5095111215'" role="button" tabindex="0">
+                <path fill="var(--na)" d="M90 145 C130 105, 205 88, 275 112 C320 128, 360 164, 369 207 C377 245, 353 273, 312 291 C278 306, 257 327, 223 332 C176 338, 129 319, 100 284 C71 250, 57 182, 90 145 Z"></path>
+                <text class="region-label" x="218" y="205">NORTH AMERICA</text>
+                <text class="region-sub" x="218" y="226">Open regional board</text>
+              </g>
+
+              <!-- LATAM -->
+              <g class="region" onclick="window.top.location.href='https://motionpictures.monday.com/boards/5095111210'" role="button" tabindex="0">
+                <path fill="var(--latam)" d="M294 310 C327 315, 357 342, 367 378 C378 417, 366 458, 339 486 C320 506, 291 514, 270 505 C248 495, 237 470, 244 445 C250 424, 267 408, 271 387 C275 364, 259 333, 294 310 Z"></path>
+                <text class="region-label" x="306" y="400">LATAM</text>
+                <text class="region-sub" x="306" y="421">Open regional board</text>
+              </g>
+
+              <!-- EMEA -->
+              <g class="region" onclick="window.top.location.href='https://motionpictures.monday.com/boards/5094799901'" role="button" tabindex="0">
+                <path fill="var(--emea)" d="M420 132 C482 105, 571 102, 640 124 C704 145, 749 188, 759 237 C769 287, 739 332, 680 354 C621 377, 545 376, 488 355 C439 338, 403 304, 392 261 C380 214, 382 149, 420 132 Z"></path>
+                <text class="region-label" x="575" y="228">EMEA</text>
+                <text class="region-sub" x="575" y="249">Europe · Middle East · Africa</text>
+              </g>
+
+              <!-- APAC -->
+              <g class="region" onclick="window.top.location.href='https://motionpictures.monday.com/boards/5095111206'" role="button" tabindex="0">
+                <path fill="var(--apac)" d="M740 143 C786 111, 849 103, 903 116 C949 127, 987 155, 995 195 C1003 234, 978 272, 937 295 C895 319, 842 324, 794 312 C744 300, 698 267, 690 221 C682 188, 704 168, 740 143 Z"></path>
+                <path fill="var(--apac)" d="M804 336 C825 326, 852 326, 873 336 C894 346, 907 367, 904 389 C901 410, 885 429, 862 436 C839 442, 812 436, 793 421 C774 405, 768 381, 776 362 C782 350, 792 342, 804 336 Z"></path>
+                <text class="region-label" x="844" y="214">APAC</text>
+                <text class="region-sub" x="844" y="235">Asia-Pacific</text>
+              </g>
+            </svg>
+          </div>
+          <div class="note">Built for monday.com Embed widgets using top-level navigation.</div>
+        </div>
+
+        <div class="list-card">
+          <h2 class="section-title">Quick Access</h2>
+          <div class="nav-list">
+            <button class="nav-button" onclick="window.top.location.href='https://motionpictures.monday.com/boards/5094799901'">
+              <div class="nav-top">
+                <div class="nav-name">EMEA</div>
+                <div class="badge emea">Board</div>
+              </div>
+              <div class="nav-desc">Europe, Middle East, and Africa regional board.</div>
+            </button>
+
+            <button class="nav-button" onclick="window.top.location.href='https://motionpictures.monday.com/boards/5095111206'">
+              <div class="nav-top">
+                <div class="nav-name">APAC</div>
+                <div class="badge apac">Board</div>
+              </div>
+              <div class="nav-desc">Asia-Pacific regional board.</div>
+            </button>
+
+            <button class="nav-button" onclick="window.top.location.href='https://motionpictures.monday.com/boards/5095111215'">
+              <div class="nav-top">
+                <div class="nav-name">North America</div>
+                <div class="badge na">Board</div>
+              </div>
+              <div class="nav-desc">North America regional board.</div>
+            </button>
+
+            <button class="nav-button" onclick="window.top.location.href='https://motionpictures.monday.com/boards/5095111210'">
+              <div class="nav-top">
+                <div class="nav-name">LATAM</div>
+                <div class="badge latam">Board</div>
+              </div>
+              <div class="nav-desc">Latin America regional board.</div>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.querySelectorAll(".region").forEach(function(region) {
+      region.addEventListener("keydown", function(event) {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          region.click();
+        }
+      });
+    });
+  </script>
+</body>
+</html>
